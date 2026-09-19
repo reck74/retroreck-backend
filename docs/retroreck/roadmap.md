@@ -2,6 +2,8 @@
 
 Fecha: 2026-09-19. Estado: plan de trabajo; solo fork, investigación y documentación completados.
 
+Para iniciar una sesión de implementación, seguir [arranque y primeras pruebas](arranque.md): preflight, E0, spike E1a y formato de evidencia. No crear un segundo listado de casos de prueba.
+
 ## 1. Prioridades
 
 | Prioridad | Resultado | Regla de salida |
@@ -29,7 +31,7 @@ El [sistema visual aprobado](frontend.md) es requisito transversal desde E1a: in
 | E6 — Pool y operación | P2 | Cola/reposición, máximo de workers, conciliación, drenaje, TURN y vista operativa | Sin doble asignación; reducir pool no termina salas activas; fallos reconciliados |
 | E7 — Piloto controlado | P2 | Matriz de juego/navegador, carga, costos medidos y runbooks de soporte/recuperación | Equipo administra comunidad y responde a fallos con datos y procedimientos probados |
 
-E1a–E1c pueden avanzar sin que el motor esté disponible; E3 requiere E0–E2. E4 depende de E3; E5, de E3/E4; E6 completa el ciclo de operación sobre E3/E5. E7 exige todos los anteriores.
+E1a prueba identidad y contratos con fixtures; el canje real se entrega en E2, el control de espectadores en E4 y la revocación contra juego vivo en E5. E1a–E1c pueden avanzar sin que el motor esté disponible; E3 requiere E0–E2. E4 depende de E3; E5, de E3/E4; E6 completa el ciclo de operación sobre E3/E5. E7 exige todos los anteriores.
 
 La consola inicial muestra cuenta, permisos, cuotas y soporte. Las pestañas de biblioteca, guardados y partidas se implementan con sus respectivos módulos; no se presentan datos simulados como funcionalidad terminada.
 
@@ -46,7 +48,7 @@ La consola inicial muestra cuenta, permisos, cuotas y soporte. Las pestañas de 
 | 7 | Auditoría y casos | Registro durable y contexto de soporte | Cada acción administrativa identifica actor, objetivo y resultado |
 | 8 | Panel inicial | Usuarios, ficha, capacidades, casos y equipo | Caso de soporte resuelto; permisos del panel coinciden con servidor |
 | 9 | Lobby e invitaciones | Contratos, reserva atómica y UI de entrada | Reintentos y concurrencia no duplican puestos ni participantes |
-| 10 | Corte vertical jugable | Biblioteca privada, worker y tickets | Host + amigo + invitado en una partida autorizada |
+| 10 | Corte vertical jugable | Biblioteca privada, worker y tickets (E3), control de puestos y espectadores (E4) | Host + amigo + invitado con autoridad de motor comprobada; antes de E4 el corte se limita al laboratorio interno |
 
 La política de auditoría se define en el trabajo 5 y se conecta desde las primeras operaciones; el trabajo 7 completa persistencia y consulta. No se liberan mutaciones de personal sin su registro correspondiente.
 

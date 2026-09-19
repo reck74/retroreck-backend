@@ -94,7 +94,7 @@ deploy/retroreck/               # Configuración propia, independiente del ejemp
 docs/retroreck/                # Este plan y decisiones
 ```
 
-Son rutas previstas, no módulos ya creados. El frontend React puede vivir en su repositorio de producto. Los tipos compartidos deben generarse desde contratos verificables, evitando dos definiciones manuales contradictorias en Go y TypeScript.
+Son rutas previstas, no módulos ya creados. La ubicación final del frontend de jugadores (repositorio de producto o aplicación separada en el fork) se registra en E1a junto con la distribución del sistema gráfico; no construir dos frontends de jugadores en paralelo. El frontend React puede vivir en su repositorio de producto. Los tipos compartidos deben generarse desde contratos verificables, evitando dos definiciones manuales contradictorias en Go y TypeScript.
 
 ## 5. Identidad, permisos y controles
 
@@ -139,7 +139,7 @@ Se propone un canal interno de control RetroReck versionado para admisión, pues
 | Etapa | Trabajo | Criterio de salida | Dependencias |
 |---|---|---|---|
 | E0 — Baseline | Fork, build reproducible, pin de cores, ejecución con cliente upstream | Una partida con audio/video, dos clientes y save/load comprobado; commit e imagen registrados | Ninguna |
-| E1a — Identidad y contratos | Spike Better Auth/NestJS, registro, recuperación, invitado, tenant; fixtures Go/TS | Invitado entra sin registrarse; cuentas aisladas; framework validado, incluido Admin restringido | Independiente de E0 hasta integrar motor |
+| E1a — Identidad y contratos | Spike Better Auth/NestJS, registro, recuperación, invitado, tenant; fixtures Go/TS | Sesión invitada sin registro; cuentas aisladas; factibilidad de Admin/2FA y fixtures validada, sin exigir sala/juego integrado | Independiente de E0 hasta integrar motor |
 | E1b — Autoridad administrativa | Administrador/superadministrador, perfiles, bootstrap, 2FA, revocación y auditoría | Superadmin gestiona cuentas/permisos del equipo; admin no escala privilegios; último superadmin protegido | E1a |
 | E1c — Consola de comunidad | Directorio/ficha/capacidades, casos de soporte y gestión del equipo | Soporte atiende un usuario con permisos comprobados; un cambio de perfil afecta sesiones abiertas | E1b |
 | E2 — Lobby e invitaciones | Usuarios existentes, enlace, revocación, reservas de puestos, cupos | Invitación dirigida no canjeable por otra cuenta; enlace vencido/revocado falla; reserva concurrente correcta | E1a–E1c |
@@ -150,6 +150,8 @@ Se propone un canal interno de control RetroReck versionado para admisión, pues
 | E7 — Piloto | Pruebas de administración, juego/navegador, carga y observabilidad | Comunidad administrable, recuperación ensayada y métricas reales de capacidad | E0–E6 |
 
 No se asignan fechas de entrega antes de E0/E1a: toolchain nativa, integración auth y protocolo pueden cambiar la estimación. Cada etapa se divide en PRs pequeños con resultado visible y pruebas de comportamiento. El [roadmap priorizado](./roadmap.md) fija P0 para base/autoridad, P1 para la experiencia completa y P2 para operación/piloto, e incluye el backlog inicial en orden.
+
+El primer lote y su evidencia se detallan en [Inicio de implementación y primeras pruebas](arranque.md). E1a usa fixtures de contratos; el canje real, los controles y la revocación en el motor se verifican en E2, E4 y E5 respectivamente.
 
 ### Primeros cambios del fork
 

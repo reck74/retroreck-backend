@@ -8,6 +8,7 @@ El objetivo es conservar el motor Libretro/WebRTC y añadir cuentas, administrac
 
 | Documento | Contenido |
 |---|---|
+| [Inicio y primeras pruebas](./arranque.md) | Estado real, preparación de sesión, primer lote E0/E1a y evidencia exigida |
 | [Plan de implementación](./plan.md) | Requisitos acordados, arquitectura, módulos, contratos, etapas y criterios de aceptación |
 | [Identidad y tenants](./identidad.md) | Comparativa de frameworks, recomendación, permisos y modelo de datos |
 | [Administración de la comunidad](./administracion.md) | Administradores, superadministradores, soporte, gestión de permisos y criterios de aceptación |

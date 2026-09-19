@@ -39,6 +39,8 @@ El acceso administrativo global no convierte al operador en dueño de la cuenta 
 
 Propuesta: un administrador nuevo recibe un perfil mínimo de consulta/soporte; suspensiones, cuotas y cierre de partidas se conceden expresamente. No puede modificar a otro administrador ni a un superadministrador mediante endpoints genéricos de usuarios, aunque tenga permiso para modificar usuarios ordinarios.
 
+El acceso administrativo exige segundo factor satisfecho en la sesión actual, no solo activado en el perfil. Las sesiones previas a una promoción o abiertas por otra vía de login no heredan esa comprobación. Ver la [política de métodos de acceso](identidad.md#segundo-factor-y-métodos-de-acceso); probar OAuth, recuperación y retirada de 2FA para evitar rutas alternativas.
+
 Los superadministradores también se autentican, usan doble factor y dejan auditoría. No se representan con una clave secreta compartida ni con una ruta pública de creación de cuentas privilegiadas.
 
 ## 4. Ficha de soporte: qué podrá revisar el administrador
@@ -107,7 +109,7 @@ La lista de usuarios usa búsqueda/paginación del framework donde corresponda; 
 2. Un administrador consulta usuarios/inventario conforme a su perfil y puede explicar restricciones de cuenta desde la ficha.
 3. Un administrador no se promueve, no cambia perfiles y no modifica a personal privilegiado a través de rutas de usuario genéricas o del plugin.
 4. Un superadministrador crea y modifica un administrador, ajusta sus permisos y lo desactiva. Las sesiones abiertas pierden acceso tras la revocación.
-5. La aceptación de invitación administrativa verifica destinatario, expiración, uso único y segundo factor.
+5. La aceptación de invitación administrativa verifica destinatario, expiración, uso único y segundo factor. Las sesiones previas o de otros métodos de acceso no ejercen autoridad sin satisfacer también el segundo factor vigente.
 6. Se preserva al último superadministrador activo con acciones concurrentes; se prueba la recuperación.
 7. Las consultas y cambios auditados identifican al operador real y no contienen secretos ni contenido innecesario de archivos.
 8. Un permiso de inventario no habilita descarga de contenido; un acceso de diagnóstico autorizado queda limitado y registrado.

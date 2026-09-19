@@ -1,6 +1,6 @@
 # RetroReck Backend — instrucciones de implementación
 
-Leer primero [el plan vigente](docs/retroreck/README.md). Este repositorio conserva el motor cloud-game; las funciones RetroReck descritas son requisitos y propuestas, no implementación terminada.
+Leer primero [el plan vigente](docs/retroreck/README.md) y [el inicio de implementación y primeras pruebas](docs/retroreck/arranque.md). Este repositorio conserva el motor cloud-game; las funciones RetroReck descritas son requisitos y propuestas, no implementación terminada.
 
 Toda interfaz de RetroReck, incluidas autenticación, soporte, administración y superadministración, usa exclusivamente el sistema visual aprobado. Leer [el contrato de frontend](docs/retroreck/frontend.md) antes de cualquier cambio UI. El frontend upstream es una referencia funcional, no una dirección gráfica aprobada.
 

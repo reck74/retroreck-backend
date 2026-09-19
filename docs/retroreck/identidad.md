@@ -35,6 +35,8 @@ Insforge puede reconsiderarse como infraestructura o mantenerse si el spike demu
 
 NestJS ofrece estructura modular sobre Node/TypeScript. La integración NestJS documentada por Better Auth usa un paquete **mantenido por la comunidad** y señala soporte Fastify en beta. Por eso proponemos Express inicialmente y un spike que pruebe montaje del handler, cookies y guards. Si el adaptador añade fragilidad, montar el handler Node/Express documentado y un guard pequeño que consuma la API oficial de sesiones; no reimplementar la autenticación. Fuentes: [NestJS](https://docs.nestjs.com/), [integración NestJS](https://better-auth.com/docs/integrations/nestjs), [integración Express](https://better-auth.com/docs/integrations/express).
 
+La revisión final confirma además que la integración Express documentada requiere ESM y montar el handler antes del parser de cuerpo; el patrón de ruta cambia entre Express 4 y 5. El spike debe comprobar ambas condiciones con la versión fijada de NestJS/Express, sin copiar una plantilla CommonJS incompatible. [Fuente](https://better-auth.com/docs/integrations/express).
+
 El adaptador Prisma está documentado por Better Auth; la generación de esquema y la aplicación de migraciones son pasos distintos. Revisar y versionar las migraciones con Prisma. [Fuente](https://better-auth.com/docs/adapters/prisma).
 
 ## 3. Qué significa tenant en RetroReck
@@ -102,9 +104,19 @@ Configuración propuesta para validar en el spike:
 
 No se ha efectuado una auditoría integral del framework. Se revisaron avisos oficiales recientes: existen correcciones para flujos de magic-link/email OTP y SSO. La versión final debe fijarse con sus dependencias y comprobarse contra los avisos aplicables al configurar los plugins; no usar una versión antigua por copiar un ejemplo. Fuentes: [avisos del proyecto](https://github.com/better-auth/better-auth/security/advisories), [corrección de acceso por correo](https://github.com/better-auth/better-auth/security/advisories/GHSA-qq9h-g4jm-xgf3), [corrección del plugin SSO](https://github.com/better-auth/better-auth/security/advisories/GHSA-8c5h-wx78-2cfg).
 
+### Segundo factor y métodos de acceso
+
+La documentación del plugin 2FA advierte que los métodos sociales y otros flujos sin contraseña no exigen el segundo factor por defecto. Tener 2FA configurado en la cuenta no demuestra haberlo satisfecho en la sesión actual. [Fuente oficial revisada](https://better-auth.com/docs/plugins/2fa).
+
+Propuesta inicial para el equipo: acceso con correo/contraseña y TOTP verificado. El guard administrativo exige cuenta habilitada, permiso vigente y evidencia de segundo factor válido para esa sesión. Una sesión obtenida por OAuth u otra vía no obtiene autoridad de equipo hasta completar el desafío que valide el spike; si esa integración no está lista, se deniega el acceso administrativo por esa vía. Pruebas obligatorias de promoción de una cuenta con sesión previa, desafío incompleto, recuperación y desactivación de 2FA. Reutilizar verificadores del framework, sin implementar TOTP propio.
+
+El acceso Google mostrado en el mockup requiere configuración y validación separadas; no es una capacidad terminada ni un requisito para demostrar el primer flujo local de email/contraseña. Su disponibilidad real se refleja en la UI conforme a la guía.
+
 ### Salida exigida del spike
 
-Registro, verificación, login/logout, recuperación, revocación y 2FA administrativo deben funcionar; un invitado debe entrar sin correo, mantener su sesión al recargar y quedar bloqueado tras expulsión. Probar dos tenants, invitación dirigida a tercero, replay del enlace consumido, escalamiento de espectador y creación concurrente del espacio personal. Comprobar aislamiento con llamadas directas a API, no solo con botones ocultos.
+En E1a deben funcionar registro, verificación, login/logout, recuperación y revocación de sesiones; demostrar factibilidad de 2FA administrativo. Un invitado obtiene una sesión sin correo y la conserva al recargar, sin crear tenant ni sala. Probar dos tenants, acceso cruzado a recursos de prueba y creación concurrente del espacio personal con llamadas directas a API, no solo botones ocultos.
+
+E1a valida contratos con fixtures, no una partida integrada. La invitación dirigida a tercero, el replay del enlace consumido y el canje real se prueban en E2. El escalamiento de espectador se prueba en E4; la expulsión y revocación sobre la conexión de juego viva, en E5. La [matriz de primeras pruebas](arranque.md) fija esta separación para evitar dependencias circulares.
 
 Probar además el plugin Admin con roles restringidos: un administrador no puede promocionarse ni modificar personal; un superadministrador puede crear, editar permisos y desactivar administradores; las rutas nativas del framework no evitan estas reglas. E1b/E1c completan consola, auditoría y protección del último superadministrador antes de habilitar usuarios externos.
 

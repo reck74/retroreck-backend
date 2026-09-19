@@ -1,3 +1,9 @@
+# RetroReck Backend
+
+Fork de [giongto35/cloud-game](https://github.com/giongto35/cloud-game) para el motor de ejecución de RetroReck. La adaptación está en fase de diseño; el comportamiento del motor permanece igual al upstream analizado.
+
+Ver el [plan de implementación, identidad y pool de workers](docs/retroreck/README.md). La documentación original de CloudRetro se conserva a continuación.
+
 # CloudRetro
 
 [![Build](https://github.com/giongto35/cloud-game/workflows/build/badge.svg)](https://github.com/giongto35/cloud-game/actions?query=workflow:build)

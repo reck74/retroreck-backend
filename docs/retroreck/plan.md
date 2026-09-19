@@ -12,6 +12,9 @@ Fecha: 2026-09-19. Base: `cloud-game` en `1fab9ef07a02cab0e0cdea169e95b5ec6e2e04
 6. Otros participantes pueden observar sin control. Ser registrado o invitado es independiente de ser jugador o espectador.
 7. Los participantes de una partida comparten su worker. El pool crece según partidas y recursos disponibles.
 8. Usuarios, contraseñas, recuperación y sesiones se apoyarán en un framework existente.
+9. Los administradores gestionan y brindan soporte a la comunidad: consultan usuarios, capacidades y recursos de sus cuentas según sus permisos.
+10. Los superadministradores crean y modifican las cuentas administrativas, conceden/retiran permisos y controlan el acceso del equipo.
+11. La administración global forma parte de la primera etapa de identidad y del primer lanzamiento; es independiente de ser propietario de un tenant o anfitrión.
 
 ## 2. Propuestas de comportamiento para la primera versión
 
@@ -37,6 +40,7 @@ Los límites y tiempos propuestos se detallan en [workers.md](./workers.md). No 
 ```mermaid
 flowchart LR
   Browser[Navegador React] <-->|Sesión, biblioteca, invitaciones, lobby| Product[API de producto: NestJS + Better Auth]
+  Staff[Consola de administradores y superadministradores] <-->|Permisos globales, soporte y auditoría| Product
   Product --> DB[(PostgreSQL)]
   Product --> Objects[Storage privado de ROMs y saves]
   Product <-->|Asignaciones y eventos de sesión| Coordinator[Coordinator del fork Go]
@@ -49,6 +53,8 @@ flowchart LR
 ```
 
 **API de producto:** identidad, tenant, biblioteca, invitaciones, permisos, lobby, asignación durable, cuotas, metadatos de guardado y auditoría. Recomendación: NestJS con su adaptador Express, Better Auth y PostgreSQL/Prisma; ver [investigación](./identidad.md).
+
+**Consola administrativa:** directorio de usuarios, ficha de cuenta/capacidades/inventario, soporte y operaciones autorizadas. El superadministrador dispone además de gestión del equipo y perfiles de permisos. Las comprobaciones residen en la API; el panel no es una frontera de autorización por sí solo. Ver [administración global](./administracion.md).
 
 **Coordinator:** valida el acceso a la partida asignada, enlaza conexiones, transmite señalización y comandos autorizados, informa estado vivo. Conserva un registro operativo en memoria; no es la única fuente de verdad para propiedad, reservas ni consumo.
 
@@ -66,6 +72,9 @@ Se preservan `cmd/`, `pkg/`, `web/`, `go.mod` y los builds upstream. Nuevos dire
 services/platform/             # NestJS: API y módulos de producto
   src/auth/                    # Better Auth y adaptación de sesiones
   src/tenants/                 # Propiedad y aislamiento de datos
+  src/staff-access/            # Autoridad global, perfiles y cuentas administrativas
+  src/admin/                   # Consultas y operaciones de comunidad autorizadas
+  src/support/                 # Ficha de usuario, casos y diagnóstico
   src/library/                 # ROMs privadas, manifiestos y acceso
   src/rooms/                   # Lobby, participantes y capacidades
   src/invitations/             # Usuarios registrados y enlaces externos
@@ -77,6 +86,7 @@ services/platform/             # NestJS: API y módulos de producto
   src/audit/                   # Acciones de control y diagnóstico
   prisma/                     # Esquema y migraciones
 services/provisioner/           # Adaptador del runtime y pool
+apps/admin/                    # Consola React del equipo, con módulos de permisos y soporte
 contracts/retroreck-v1/         # JSON Schema/OpenAPI, fixtures y eventos
 deploy/retroreck/               # Configuración propia, independiente del ejemplo upstream
 docs/retroreck/                # Este plan y decisiones
@@ -86,7 +96,9 @@ Son rutas previstas, no módulos ya creados. El frontend React puede vivir en su
 
 ## 5. Identidad, permisos y controles
 
-El modelo completo está en [identidad.md](./identidad.md). Reglas que el motor debe aplicar:
+El modelo completo está en [identidad.md](./identidad.md), y la autoridad administrativa en [administracion.md](./administracion.md). Un administrador no adquiere permisos globales por ser host o miembro de una organización. Las operaciones administrativas identifican al operador real y al usuario afectado, y se auditan.
+
+Reglas que el motor debe aplicar:
 
 - No inferir permisos a partir de un apodo, código de sala, índice enviado por el navegador o presencia de una sesión autenticada.
 - La API verifica el host y emite una orden de asignación con versión, participante, conexión autorizada y puesto.
@@ -111,6 +123,10 @@ El modelo completo está en [identidad.md](./identidad.md). Reglas que el motor 
 | Guardado confirmado | ID de operación, versión, hash, ubicación y resultado local/cloud diferenciados |
 | Heartbeat / evento interno | Identidad de servicio; asignación/generación; secuencia y deduplicación |
 | Cerrar partida | Host o política del servidor; drenar, persistir, liquidar consumo una vez y retirar worker |
+| Consultar ficha/inventario de usuario | Administrador autorizado; búsqueda paginada, ámbito y auditoría; sin secretos |
+| Suspender usuario / ajustar capacidades | Permiso específico y objetivo ordinario; motivo, auditoría y revocación propagada |
+| Crear/editar/desactivar administrador | Solo superadministrador; cuenta verificada, 2FA, revocación y protección del último superadministrador |
+| Gestionar perfiles administrativos | Solo superadministrador; capacidades conocidas, versión y efecto sobre sesiones abiertas |
 
 El contrato del motor upstream usa señalización `101`, inicio `104` y DataChannel `data`, negociado con ID 0. Sus controles retropad son binarios. Los códigos internos `201`, `202`, `204`, `205` y `206` ya están ocupados. No reutilizar las tablas del plan antiguo ni añadir extensiones sin negociar versión; `PT` actualmente es `uint8`.
 
@@ -121,15 +137,17 @@ Se propone un canal interno de control RetroReck versionado para admisión, pues
 | Etapa | Trabajo | Criterio de salida | Dependencias |
 |---|---|---|---|
 | E0 — Baseline | Fork, build reproducible, pin de cores, ejecución con cliente upstream | Una partida con audio/video, dos clientes y save/load comprobado; commit e imagen registrados | Ninguna |
-| E1 — Identidad y contratos | Spike Better Auth/NestJS, registro, recuperación, invitado, tenant; fixtures Go/TS | Invitado entra sin registrarse; prueba cruzada de cuentas deniega datos ajenos; decisión de framework confirmada por pruebas | E0 para integración del motor |
-| E2 — Lobby e invitaciones | Usuarios existentes, enlace, revocación, reservas de puestos, cupos | Invitación dirigida no canjeable por otra cuenta; enlace vencido/revocado falla; reserva concurrente correcta | E1 |
-| E3 — Partida privada | ROM autorizada/cache, worker reservado, ticket y señalización | Cuenta A inicia su juego; B entra solo a la sala; ningún acceso a biblioteca/descarga privada de A | E0–E2 |
+| E1a — Identidad y contratos | Spike Better Auth/NestJS, registro, recuperación, invitado, tenant; fixtures Go/TS | Invitado entra sin registrarse; cuentas aisladas; framework validado, incluido Admin restringido | Independiente de E0 hasta integrar motor |
+| E1b — Autoridad administrativa | Administrador/superadministrador, perfiles, bootstrap, 2FA, revocación y auditoría | Superadmin gestiona cuentas/permisos del equipo; admin no escala privilegios; último superadmin protegido | E1a |
+| E1c — Consola de comunidad | Directorio/ficha/capacidades, casos de soporte y gestión del equipo | Soporte atiende un usuario con permisos comprobados; un cambio de perfil afecta sesiones abiertas | E1b |
+| E2 — Lobby e invitaciones | Usuarios existentes, enlace, revocación, reservas de puestos, cupos | Invitación dirigida no canjeable por otra cuenta; enlace vencido/revocado falla; reserva concurrente correcta | E1a–E1c |
+| E3 — Partida privada | ROM autorizada/cache, vista administrativa de biblioteca, worker reservado, ticket y señalización | Cuenta A inicia su juego; B entra solo a la sala; soporte revisa inventario bajo permiso | E0–E2 |
 | E4 — Roles en el motor | Puestos exclusivos, cambios en vivo, espectadores, controles del host | Dos jugadores + un espectador; espectador no puede jugar/resetear; transferir control sin botones atascados | E3 |
-| E5 — Progreso y reconexión | Save/SRAM, autosave/cierre, reintentos, revocación, gracia y reanudación | Progreso restaurable en otro worker; errores cloud visibles; permisos revocados siguen revocados al reconectar | E3–E4 |
-| E6 — Pool y operación | Reposición, cola, límites, conciliación, fallo de worker/Coordinator y TURN | Sin doble asignación, sin salas interrumpidas por reducción del pool, liberación verificada y límites de costo | E3, E5 |
-| E7 — Piloto | Pruebas por juego/navegador, carga y observabilidad | Medidas de inicio, latencia, CPU, RAM y salida de red; límites de participantes ajustados con evidencia | E0–E6 |
+| E5 — Progreso y reconexión | Save/SRAM, vista de saves, autosave/cierre, reintentos, revocación al motor, gracia y reanudación | Progreso restaurable; errores cloud visibles; suspensión efectiva también en conexión de juego | E3–E4 |
+| E6 — Pool y operación | Reposición, cola, límites, conciliación, fallo de worker/Coordinator, TURN y consola operativa | Sin doble asignación; reducción no interrumpe salas; equipo ve confirmación de sus operaciones | E3, E5 |
+| E7 — Piloto | Pruebas de administración, juego/navegador, carga y observabilidad | Comunidad administrable, recuperación ensayada y métricas reales de capacidad | E0–E6 |
 
-No se asignan fechas de entrega antes de E0/E1: toolchain nativa, integración auth y protocolo pueden cambiar la estimación. Cada etapa se divide en PRs pequeños con resultado visible y pruebas de comportamiento.
+No se asignan fechas de entrega antes de E0/E1a: toolchain nativa, integración auth y protocolo pueden cambiar la estimación. Cada etapa se divide en PRs pequeños con resultado visible y pruebas de comportamiento. El [roadmap priorizado](./roadmap.md) fija P0 para base/autoridad, P1 para la experiencia completa y P2 para operación/piloto, e incluye el backlog inicial en orden.
 
 ### Primeros cambios del fork
 
@@ -146,6 +164,6 @@ No se asignan fechas de entrega antes de E0/E1: toolchain nativa, integración a
 
 El fork remoto y estos documentos existen. Todo lo demás en E0–E7 queda pendiente salvo el análisis estático y la validación sintáctica del Compose original. No se ha compilado ni jugado en este entorno.
 
-El plan anterior asumía Insforge como elección cerrada y miembros obligatoriamente registrados. Esta propuesta reabre esa decisión, recomienda Better Auth/NestJS y distingue invitados, tenants y roles de sala. Antes de implementar, reemplazar las tablas antiguas de auth/miembros, protocolo y recuperación; no combinar ambos modelos sin migración explícita.
+El plan anterior asumía Insforge como elección cerrada y miembros obligatoriamente registrados. Esta propuesta reabre esa decisión, recomienda Better Auth/NestJS y distingue invitados, tenants, roles de sala y autoridad administrativa global. La revisión actual incorpora como requisitos iniciales a administradores y superadministradores con consola de soporte y gestión de permisos. Antes de implementar, reemplazar las tablas antiguas de auth/miembros, protocolo y recuperación; no combinar ambos modelos sin migración explícita.
 
 Las decisiones que el piloto debe resolver son el catálogo inicial de cores, recursos por perfil, cupo de espectadores, presupuesto máximo del pool y plataforma de despliegue. Los valores de laboratorio propuestos permiten empezar sin presentarlos como límites definitivos del producto.

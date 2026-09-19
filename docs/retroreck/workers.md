@@ -96,6 +96,7 @@ La autoridad del host puede reasignar un puesto reservado durante la gracia; al 
 
 - **Jugador desconectado:** limpiar sus inputs; mantener su puesto solo durante la gracia. No cerrar la partida porque salió un invitado.
 - **Espectador desconectado:** retirar su peer; no afecta la emulación.
+- **Suspensión administrativa:** validar permiso del operador y auditar motivo; revocar tickets y retirar el peer afectado. Si era jugador, limpiar sus inputs; si era anfitrión, iniciar cierre con guardado conforme a la política. El panel espera confirmación o muestra estado pendiente/error. No basta con bloquear el próximo login.
 - **Host desconectado:** iniciar la gracia. Si no vuelve, cerrar la partida; otros participantes no heredan autoridad automáticamente.
 - **Coordinator desconectado:** el upstream llama a `Reset()` al reconectar y cierra sala/peers. Hay que cambiar ese flujo para mantener la ejecución durante una gracia acotada y reconciliar asignación/generación antes de aceptar órdenes nuevas. Mientras no exista esa modificación, no anunciar recuperación transparente.
 - **Worker perdido:** la memoria de la partida puede perderse; restaurar el último save confirmado en una nueva asignación, después de impedir una ejecución duplicada. Eso es recuperación desde checkpoint, no migración en vivo.
@@ -124,3 +125,6 @@ Estimación orientativa de red: salida de una sala ≈ bitrate codificado × pee
 8. Reducir pool o desplegar nueva imagen drena workers libres y deja terminar los ocupados.
 9. Varias instancias tienen puertos/ICE correctos; prueba desde redes distintas y con TURN forzado.
 10. Los límites de CPU/memoria del contenedor y la limpieza de archivos impiden que una partida contamine la siguiente.
+11. Una orden de soporte requiere permiso administrativo vigente, actor/motivo y generación correcta; suspender al invitado no cierra una partida ajena, y suspender al anfitrión ejecuta el cierre definido con guardado.
+
+Los roles y la consola se especifican en [administracion.md](./administracion.md); sus permisos básicos se implementan en E1 y la integración operativa con partidas/workers se verifica en E5/E6 del [roadmap](./roadmap.md).

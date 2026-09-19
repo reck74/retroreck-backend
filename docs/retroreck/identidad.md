@@ -8,6 +8,8 @@ Investigación: 2026-09-19, documentación oficial. Estado: recomendación para 
 
 Better Auth resolvería cuentas, credenciales, sesiones y recuperación. NestJS organizaría los módulos propios de RetroReck. PostgreSQL conservaría datos y restricciones; Prisma gestionaría acceso y migraciones revisables. No necesitamos crear un sistema propio de contraseñas ni modificar los algoritmos del proveedor.
 
+La gestión global de la comunidad es un requisito inicial: integrar las operaciones de identidad del plugin Admin con roles de administrador y superadministrador, perfiles de permisos y una consola propia. La especificación de autoridad, soporte y cuentas del equipo está en [administracion.md](./administracion.md); su entrega forma parte de E1 en el [roadmap](./roadmap.md).
+
 Esta elección prioriza código TypeScript local, configuración versionada, módulos pequeños, contratos tipados y pruebas reproducibles. Son características que facilitan tanto el trabajo humano como el trabajo asistido por agentes; no eliminan la revisión de permisos ni las actualizaciones de seguridad.
 
 ## 2. Comparativa
@@ -45,17 +47,22 @@ El plugin de organizaciones puede representar estos espacios y sus miembros perm
 
 El aislamiento no lo garantiza automáticamente ese plugin: consultas, descargas, WebSockets y operaciones del motor deben comprobar tenant y permiso de sala. Para el MVP, la base no se expone directamente al navegador; repositorios de datos con ámbito obligatorio y tests cruzados. Si se introduce acceso directo o RLS, diseñar el rol de aplicación y la propagación segura del contexto; no asumir que Prisma activa RLS por sí solo.
 
+Los tenants comparten servicios y base de datos; son ámbitos lógicos, no instalaciones por usuario. El equipo administrativo usa operaciones globales autorizadas y auditadas para consultar distintos tenants. No necesita convertirse en miembro de cada espacio para brindar soporte, ni se relajan por ello las consultas de usuarios ordinarios.
+
 ## 4. Identidades y roles
 
 | Dimensión | Valores | Significado |
 |---|---|---|
 | Identidad | Permanente / anónima | Cómo se autentica la persona |
+| Autoridad global | Sin rol de equipo / administrador / superadministrador | Soporte de usuarios o gestión de las cuentas y permisos administrativos |
 | Propiedad | Dueño del tenant / visitante de sala | Qué recursos privados administra |
 | Autoridad en sala | Anfitrión / participante | Quién invita, expulsa y asigna controles |
 | Modo de participación | Jugador / espectador | Si puede enviar controles |
 | Puesto | 0–3 o ninguno | Puerto interno; interfaz muestra Jugador 1–4 |
 
 El anfitrión también puede observar y asignar todos los puestos a sus invitados. La autoridad de anfitrión no depende de ocupar el primer control.
+
+El administrador revisa usuarios, capacidades e inventario conforme a su perfil. El superadministrador controla las cuentas y permisos del equipo. El rol `owner` de una organización personal nunca otorga autoridad global. Las restricciones se validan también sobre el usuario objetivo: permiso para modificar usuarios ordinarios no habilita modificar administradores.
 
 Better Auth anónimo crea un registro interno y una sesión aunque no pida correo ni contraseña. Eso satisface «sin crear cuenta» en la experiencia del usuario, pero debe explicarse en el diseño de datos y retención. La admisión exige además una invitación válida; obtener sesión anónima no concede acceso a ninguna sala. [Fuente](https://better-auth.com/docs/plugins/anonymous).
 
@@ -73,6 +80,8 @@ Better Auth anónimo crea un registro interno y una sesión aunque no pida corre
 | Partida | Sala, worker, generación, estado, lease | Como máximo una ejecución activa por sala/worker |
 | Guardado | Tenant, ROM/hash, core, slot, versión, resultado | Invitados no adquieren propiedad del progreso |
 | Evento/auditoría | Operación, actor, sala, versión, resultado | Deduplicación y trazabilidad de cambios de autoridad |
+| Asignación/perfil de equipo | Identidad, rol global, capacidades, estado y versión | Solo superadministradores gestionan autoridad administrativa |
+| Caso y evento de soporte | Operador, usuario/tenant objetivo, motivo, resultado | Actuar con identidad propia y auditar accesos y cambios |
 
 Usar IDs de identidad como valores opacos compatibles con el framework; no asumir que todos son UUID. Las claves de producto pueden usar UUID separados.
 
@@ -86,7 +95,7 @@ Configuración propuesta para validar en el spike:
 - Cookies de sesión HttpOnly/Secure bajo HTTPS, origen compartido mediante proxy y lista cerrada de redirecciones.
 - Revocación de sesiones al recuperar contraseña; revocación de acceso vivo al motor al expulsar o cerrar la sala.
 - Rate limits compartidos entre réplicas, políticas de creación de invitados y limpieza de identidades temporales sin sesiones/partidas activas.
-- 2FA para administración; no activar SSO, SCIM, proveedor OAuth propio ni plugins de facturación sin necesidad.
+- Plugin Admin con adaptación de permisos, 2FA obligatorio para administradores/superadministradores y bootstrap controlado; no activar SSO, SCIM, proveedor OAuth propio ni plugins de facturación sin necesidad.
 - Sesión de navegador separada del ticket breve de juego. Ticket de un uso por conexión, ligado a audiencia, participante, sala, worker y generación; firma mediante biblioteca estándar. Nunca usar el enlace de invitación como credencial permanente del motor.
 - Enlace externo con secreto aleatorio de alta entropía, almacenado como hash; no registrar ese secreto en logs. Un código corto de sala no es autorización suficiente.
 - Cuenta registrada que acepta invitación dirigida debe coincidir con su destinatario. Un enlace externo puede permitir varios usos hasta el límite configurado; un enlace de puesto reservado es individual.
@@ -96,5 +105,7 @@ No se ha efectuado una auditoría integral del framework. Se revisaron avisos of
 ### Salida exigida del spike
 
 Registro, verificación, login/logout, recuperación, revocación y 2FA administrativo deben funcionar; un invitado debe entrar sin correo, mantener su sesión al recargar y quedar bloqueado tras expulsión. Probar dos tenants, invitación dirigida a tercero, replay del enlace consumido, escalamiento de espectador y creación concurrente del espacio personal. Comprobar aislamiento con llamadas directas a API, no solo con botones ocultos.
+
+Probar además el plugin Admin con roles restringidos: un administrador no puede promocionarse ni modificar personal; un superadministrador puede crear, editar permisos y desactivar administradores; las rutas nativas del framework no evitan estas reglas. E1b/E1c completan consola, auditoría y protección del último superadministrador antes de habilitar usuarios externos.
 
 Entregar versiones fijadas, migraciones, configuración de ejemplo sin secretos, pruebas y una decisión final de adopción. La seguridad de RetroReck depende de esa integración además del framework elegido.

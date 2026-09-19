@@ -12,6 +12,8 @@ Fecha: 2026-09-19. Estado: plan de trabajo; solo fork, investigación y document
 
 P2 expresa orden de desarrollo, no opcionalidad: sin límites de recursos, recuperación y operación no se abre el piloto. El pool mínimo acotado se introduce en E3; su escalado y conciliación completa se cierran en E6.
 
+El [sistema visual aprobado](frontend.md) es requisito transversal desde E1a: integrar su distribución y componentes al construir identidad, y aplicarlos a la consola en E1b/E1c. El diseño existe; no se planifica un rediseño.
+
 ## 2. Etapas con resultado demostrable
 
 | Etapa | Prioridad | Entregables | Demostración de aceptación |
@@ -51,6 +53,7 @@ La política de auditoría se define en el trabajo 5 y se conecta desde las prim
 ## 4. Criterios transversales de cada entrega
 
 - Cambios pequeños con contrato, migración y prueba de comportamiento cuando corresponda.
+- Toda UI sigue el sistema visual único, con evidencia de estados, adaptación y accesibilidad; incluye las pantallas administrativas.
 - Fuente única para identidad y autoridad administrativa; cambios de permisos afectan sesiones abiertas.
 - Las rutas del framework no pueden evitar las restricciones de las rutas propias.
 - Soporte puede revisar capacidades e inventario autorizado de una cuenta; ver secretos no es parte de ninguna ficha.

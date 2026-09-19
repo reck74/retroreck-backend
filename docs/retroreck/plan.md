@@ -54,6 +54,8 @@ flowchart LR
 
 **API de producto:** identidad, tenant, biblioteca, invitaciones, permisos, lobby, asignación durable, cuotas, metadatos de guardado y auditoría. Recomendación: NestJS con su adaptador Express, Better Auth y PostgreSQL/Prisma; ver [investigación](./identidad.md).
 
+Todo el frontend utiliza el **único sistema visual aprobado de RetroReck**, incluida la consola. Ver [contrato gráfico y distribución](./frontend.md); los assets del frontend upstream no son una alternativa de diseño.
+
 **Consola administrativa:** directorio de usuarios, ficha de cuenta/capacidades/inventario, soporte y operaciones autorizadas. El superadministrador dispone además de gestión del equipo y perfiles de permisos. Las comprobaciones residen en la API; el panel no es una frontera de autorización por sí solo. Ver [administración global](./administracion.md).
 
 **Coordinator:** valida el acceso a la partida asignada, enlaza conexiones, transmite señalización y comandos autorizados, informa estado vivo. Conserva un registro operativo en memoria; no es la única fuente de verdad para propiedad, reservas ni consumo.
@@ -164,6 +166,6 @@ No se asignan fechas de entrega antes de E0/E1a: toolchain nativa, integración 
 
 El fork remoto y estos documentos existen. Todo lo demás en E0–E7 queda pendiente salvo el análisis estático y la validación sintáctica del Compose original. No se ha compilado ni jugado en este entorno.
 
-El plan anterior asumía Insforge como elección cerrada y miembros obligatoriamente registrados. Esta propuesta reabre esa decisión, recomienda Better Auth/NestJS y distingue invitados, tenants, roles de sala y autoridad administrativa global. La revisión actual incorpora como requisitos iniciales a administradores y superadministradores con consola de soporte y gestión de permisos. Antes de implementar, reemplazar las tablas antiguas de auth/miembros, protocolo y recuperación; no combinar ambos modelos sin migración explícita.
+El plan anterior asumía Insforge como elección cerrada y miembros obligatoriamente registrados. Esta propuesta reabre esa decisión, recomienda Better Auth/NestJS y distingue invitados, tenants, roles de sala y autoridad administrativa global. La revisión actual incorpora como requisitos iniciales a administradores y superadministradores con consola de soporte y gestión de permisos. El workspace de producto ya archivó esas especificaciones y reescribió su arquitectura, frontend e índice. Los contratos nuevos de auth/miembros, protocolo y recuperación se concretan durante las etapas indicadas; no reutilizar el modelo histórico como implementación.
 
 Las decisiones que el piloto debe resolver son el catálogo inicial de cores, recursos por perfil, cupo de espectadores, presupuesto máximo del pool y plataforma de despliegue. Los valores de laboratorio propuestos permiten empezar sin presentarlos como límites definitivos del producto.

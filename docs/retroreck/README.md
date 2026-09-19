@@ -12,6 +12,7 @@ El objetivo es conservar el motor Libretro/WebRTC y añadir cuentas, administrac
 | [Identidad y tenants](./identidad.md) | Comparativa de frameworks, recomendación, permisos y modelo de datos |
 | [Administración de la comunidad](./administracion.md) | Administradores, superadministradores, soporte, gestión de permisos y criterios de aceptación |
 | [Pool de workers](./workers.md) | Asignación, escalado, recuperación, costos medibles y pruebas |
+| [Frontend y sistema visual](./frontend.md) | Única autoridad gráfica, distribución de tokens y consola coherente con el producto |
 | [Prioridades y roadmap](./roadmap.md) | Orden de trabajo, backlog inicial y entregables necesarios para abrir el piloto |
 
 Los requisitos de participación vienen de la definición del producto. Frameworks, límites iniciales y arquitectura de despliegue son recomendaciones de diseño, sujetas a los experimentos indicados; no son capacidades ya disponibles en este fork.

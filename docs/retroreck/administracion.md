@@ -115,3 +115,7 @@ La lista de usuarios usa búsqueda/paginación del framework donde corresponda; 
 10. Listas de usuarios, recursos y auditoría siguen siendo paginadas y medibles con el volumen de datos del piloto.
 
 El [roadmap](./roadmap.md) integra estos entregables en el orden de implementación. No se crean cuentas administrativas reales ni se activan permisos con esta actualización documental.
+
+## Sistema visual de la consola
+
+La consola de usuarios, soporte y gestión del equipo se implementa con el [mismo sistema visual aprobado](frontend.md) del producto desde E1b/E1c. No se adopta otro tema administrativo. Las pantallas sin mockup extienden los componentes y tokens existentes, con revisión visual y permisos verificados contra la API.
